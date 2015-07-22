@@ -17,8 +17,8 @@ EOF
   }
 
   function build() {
-    local temp="${0%/*}/temp"
-    local dist="${0%/*}/dist"
+    local temp="$PWD/temp"
+    local dist="$PWD/dist"
     local iso="$dist/$1.iso"
     local mpapp="/Volumes/install_app"
     local mpbuild="/Volumes/install_build"
