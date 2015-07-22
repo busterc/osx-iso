@@ -6,13 +6,13 @@
   "install": "install -c osxiso ${PREFIX:-/usr/local}/bin",
   "repository": {
     "type": "git",
-    "url": "https://github.com/busterc/osxiso"
+    "url": "https://github.com/busterc/osx-iso"
   },
   "author": "Buster Collings",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/busterc/osxiso/issues"
+    "url": "https://github.com/busterc/osx-iso/issues"
   },
-  "homepage": "https://github.com/busterc/osxiso"
+  "homepage": "https://github.com/busterc/osx-iso"
 }
 

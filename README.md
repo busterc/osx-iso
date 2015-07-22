@@ -12,7 +12,7 @@ Mac users can download theses files from the App Store.
 
 ## Install with [bpkg](https://github.com/bpkg/bpkg)
 ```sh
-$ bpkg install busterc/osxiso
+$ bpkg install busterc/osx-iso
 ```
 
 ## Usage
