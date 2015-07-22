@@ -1,0 +1,137 @@
+#!/bin/bash
+
+function osxiso() {
+
+  local app # path for "Install OS X <version>.app"
+
+  function usage() {
+    cat <<EOF
+
+Usage: ${0##*/} <Yosemite|Mavericks>
+
+  Description:
+    Create a bootable ISO of OS X, from the installation file.
+
+EOF
+    exit 1
+  }
+
+  function build() {
+    local temp="${0%/*}/temp"
+    local dist="${0%/*}/dist"
+    local iso="$dist/$1.iso"
+    local mpapp="/Volumes/install_app"
+    local mpbuild="/Volumes/install_build"
+
+    function detachmps() {
+      echo "Attempting to detach mountpoints"
+
+      # Unmount the installer image
+      [[ ! -d  "$mpapp" ]] || hdiutil detach "/Volumes/install_app"
+
+      # Unmount the sparse bundle
+      [[ ! -d  "$mpbuild" ]] || hdiutil detach "/Volumes/install_build"
+    }
+
+    function cleanup() {
+      # Unmount the installer image
+      [[ ! -d  "$mpapp" ]] || hdiutil detach "/Volumes/install_app"
+
+      # Unmount the sparse bundle
+      [[ ! -d  "$mpbuild" ]] || hdiutil detach "/Volumes/install_build"
+
+      # Remove temp directory
+      rm -rf "$temp"
+    }
+
+    function abort() {
+      printf "\nCommand returned with error, aborting ...\n\n"
+      exit 2
+    }
+
+    trap cleanup EXIT
+    trap abort ERR
+
+    # Attempt cleanup of any previous attempts
+    # detachmps
+    cleanup
+
+    # Prepare to do work
+    mkdir -p "$temp"
+    mkdir -p "$dist"
+
+    # Mount the installer image
+    hdiutil attach "$app/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "/Volumes/install_app"
+
+    # Convert the boot image to a sparse bundle
+    hdiutil convert "/Volumes/install_app/BaseSystem.dmg" -format UDSP -o "$temp/$1"
+
+    # Increase the sparse bundle capacity to accommodate the packages
+    hdiutil resize -size 8g "$temp/$1.sparseimage"
+
+    # Mount the sparse bundle for package addition
+    hdiutil attach "$temp/$1.sparseimage" -noverify -nobrowse -mountpoint "/Volumes/install_build"
+
+    # Remove Package link and replace with actual files
+    rm "/Volumes/install_build/System/Installation/Packages"
+    cp -rp "/Volumes/install_app/Packages" "/Volumes/install_build/System/Installation/"
+
+    # Copy "$1" installer dependencies
+    cp -rp "/Volumes/install_app/BaseSystem.chunklist" "/Volumes/install_build/BaseSystem.chunklist"
+    cp -rp "/Volumes/install_app/BaseSystem.dmg" "/Volumes/install_build/BaseSystem.dmg"
+
+    # Detach mounts
+    detachmps
+
+    # Resize the partition in the sparse bundle to remove any free space
+    hdiutil resize -size "$(hdiutil resize -limits $temp/$1.sparseimage | tail -n 1 | awk '{ print $1 }')b" "$temp/$1.sparseimage"
+
+    # Convert the sparse bundle to ISO/CD master
+    hdiutil convert "$temp/$1.sparseimage" -format UDTO -o "$temp/$1"
+
+    # Rename the ISO and move it to the distribution "dist" dir
+    mv "$temp/$1.cdr" "$iso"
+
+    cleanup
+
+    printf "\n========== FINISHED ==========\n\n"
+    printf "ISO is located at '%s'\n\n" "$iso"
+  }
+
+  # Verify OS X Version
+  [[ $# -ne 0 ]] || usage
+  local versions=(
+    Yosemite
+    Mavericks
+  )
+  for version in "${versions[@]}"; do
+    if [[ "$1" = "$version" ]]; then
+      app="/Applications/Install OS X $1.app"
+
+      if [[ ! -e "$app" ]]; then
+        cat <<EOF
+
+  Missing: $app
+
+  * You can install it with the App Store
+
+EOF
+        exit 1
+      fi
+
+      # Do Work
+      build "$1"
+      exit $?
+    fi
+  done
+
+  # Invalid version provided
+  usage
+}
+
+## Export or run
+if [[ ${BASH_SOURCE[0]} != $0 ]]; then
+  export -f osxiso
+else
+  osxiso "$@"
+fi
