@@ -7,10 +7,11 @@ function osxiso() {
   function usage() {
     cat <<EOF
 
-Usage: ${0##*/} <Yosemite|Mavericks>
+    Create a bootable ISO of OS X / macOS, from the installation app file.
 
-  Description:
-    Create a bootable ISO of OS X, from the installation file.
+    Usage:
+
+      $ ${0##*/} <Sierra|"El Capitan"|Yosemite|Mavericks>
 
 EOF
     exit 1
@@ -20,25 +21,22 @@ EOF
     local temp="$PWD/temp"
     local dist="$PWD/dist"
     local iso="$dist/$1.iso"
-    local mpapp="/Volumes/install_app"
-    local mpbuild="/Volumes/install_build"
+    local app_mount="/Volumes/install_app"
+    local build_mount="/Volumes/install_build"
+    local base_mount="/Volumes/OS X Base System"
 
-    function detachmps() {
-      echo "Attempting to detach mountpoints"
+    function detach_mounts() {
+      echo "Attempting to detach mounts"
 
       # Unmount the installer image
-      [[ ! -d  "$mpapp" ]] || hdiutil detach "/Volumes/install_app"
+      [[ ! -d  "$app_mount" ]] || hdiutil detach "$app_mount"
 
       # Unmount the sparse bundle
-      [[ ! -d  "$mpbuild" ]] || hdiutil detach "/Volumes/install_build"
+      [[ ! -d  "$base_mount" ]] || hdiutil detach "$base_mount"
     }
 
     function cleanup() {
-      # Unmount the installer image
-      [[ ! -d  "$mpapp" ]] || hdiutil detach "/Volumes/install_app"
-
-      # Unmount the sparse bundle
-      [[ ! -d  "$mpbuild" ]] || hdiutil detach "/Volumes/install_build"
+      detach_mounts
 
       # Remove temp directory
       rm -rf "$temp"
@@ -53,7 +51,6 @@ EOF
     trap abort ERR
 
     # Attempt cleanup of any previous attempts
-    # detachmps
     cleanup
 
     # Prepare to do work
@@ -61,36 +58,33 @@ EOF
     mkdir -p "$dist"
 
     # Mount the installer image
-    hdiutil attach "$app/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "/Volumes/install_app"
+    hdiutil attach "$app/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "$app_mount"
 
-    # Convert the boot image to a sparse bundle
-    hdiutil convert "/Volumes/install_app/BaseSystem.dmg" -format UDSP -o "$temp/$1"
+    # Create a blank ISO of 7316MB with a Single Partition
+    hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
 
-    # Increase the sparse bundle capacity to accommodate the packages
-    hdiutil resize -size 8g "$temp/$1.sparseimage"
+    # Mount the blank ISO
+    hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
 
-    # Mount the sparse bundle for package addition
-    hdiutil attach "$temp/$1.sparseimage" -noverify -nobrowse -mountpoint "/Volumes/install_build"
+    # Restore the Base System into the blank ISO
+    asr restore -source "$app_mount/BaseSystem.dmg" -target "$build_mount" -noprompt -noverify -erase
 
     # Remove Package link and replace with actual files
-    rm "/Volumes/install_build/System/Installation/Packages"
-    cp -rp "/Volumes/install_app/Packages" "/Volumes/install_build/System/Installation/"
+    rm "$base_mount/System/Installation/Packages"
+    cp -rp "$app_mount/Packages" "$base_mount/System/Installation/"
 
     # Copy "$1" installer dependencies
-    cp -rp "/Volumes/install_app/BaseSystem.chunklist" "/Volumes/install_build/BaseSystem.chunklist"
-    cp -rp "/Volumes/install_app/BaseSystem.dmg" "/Volumes/install_build/BaseSystem.dmg"
+    cp -rp "$app_mount/BaseSystem.chunklist" "$base_mount/BaseSystem.chunklist"
+    cp -rp "$app_mount/BaseSystem.dmg" "$base_mount/BaseSystem.dmg"
 
     # Detach mounts
-    detachmps
-
-    # Resize the partition in the sparse bundle to remove any free space
-    hdiutil resize -size "$(hdiutil resize -limits $temp/$1.sparseimage | tail -n 1 | awk '{ print $1 }')b" "$temp/$1.sparseimage"
+    detach_mounts
 
     # Convert the sparse bundle to ISO/CD master
-    hdiutil convert "$temp/$1.sparseimage" -format UDTO -o "$temp/$1"
+    hdiutil convert "$temp/$1.cdr.dmg" -format UDTO -o "$temp/$1.iso"
 
     # Rename the ISO and move it to the distribution "dist" dir
-    mv "$temp/$1.cdr" "$iso"
+    mv "$temp/$1.iso.cdr" "$iso"
 
     cleanup
 
@@ -103,10 +97,16 @@ EOF
   local versions=(
     Yosemite
     Mavericks
+    "El Capitan"
+    Sierra
   )
   for version in "${versions[@]}"; do
     if [[ "$1" = "$version" ]]; then
-      app="/Applications/Install OS X $1.app"
+      if [[ "$1" = "Sierra" ]]; then
+      	app="/Applications/Install macOS $1.app"
+      else
+      	app="/Applications/Install OS X $1.app"
+      fi
 
       if [[ ! -e "$app" ]]; then
         cat <<EOF

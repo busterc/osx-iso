@@ -1,23 +1,30 @@
 # OSX-ISO
-Create a bootable ISO of OS X Yosemite or Mavericks, from the installation file.
+
+Create a bootable ISO of OS X / macOS, from the installation app file.
 
 ## Prerequisites
-The appropriate installation file must be located in `/Applications` 
-I.E.
+
+The appropriate installation file(s) must be located in `/Applications` i.e.
+
 ```
+/Applications/Install macOS Sierra.app
+/Applications/Install OS X El Capitan.app
 /Applications/Install OS X Yosemite.app
 /Applications/Install OS X Mavericks.app
 ```
+
 Mac users can download theses files from the App Store.
 
 ## Install with [bpkg](https://github.com/bpkg/bpkg)
+
 ```sh
 $ bpkg install busterc/osx-iso
 ```
 
 ## Usage
+
 ```sh
-$ osxiso <Yosemite|Mavericks>
+$ osxiso <Sierra|"El Capitan"|Yosemite|Mavericks>
 ```
 
 ## License
