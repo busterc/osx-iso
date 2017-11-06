@@ -11,51 +11,98 @@ function osxiso() {
 
     Usage:
 
-      $ ${0##*/} <Sierra|"El Capitan"|Yosemite|Mavericks>
+      $ ${0##*/} <"High Sierra"|Sierra|"El Capitan"|Yosemite|Mavericks>
 
+    Prerequisites:
+
+      The installation app file(s) must be unaltered and located at:
+      "/Applications/Install macOS High Sierra.app"
+      "/Applications/Install macOS Sierra.app"
+      "/Applications/Install OS X El Capitan.app"
+      "/Applications/Install OS X Yosemite.app"
+      "/Applications/Install OS X Mavericks.app"
 EOF
     exit 1
   }
 
-  function build() {
-    local temp="$PWD/temp"
-    local dist="$PWD/dist"
-    local iso="$dist/$1.iso"
-    local app_mount="/Volumes/install_app"
-    local build_mount="/Volumes/install_build"
-    local base_mount="/Volumes/OS X Base System"
+  local temp="$PWD/temp"
+  local dist="$PWD/dist"
+  local iso="$dist/$1.iso"
+  local app_mount="/Volumes/install_app"
+  local build_mount="/Volumes/install_build"
+  local base_mount="/Volumes/OS X Base System"
+  local highsierra_mount="/Volumes/Install macOS High Sierra"
 
-    function detach_mounts() {
-      echo "Attempting to detach mounts"
+  function detach_mounts() {
+    # Unmount the installer image
+    [[ ! -d  "$app_mount" ]] || hdiutil detach "$app_mount"
 
-      # Unmount the installer image
-      [[ ! -d  "$app_mount" ]] || hdiutil detach "$app_mount"
+    # Unmount the sparse bundle
+    [[ ! -d  "$base_mount" ]] || hdiutil detach "$base_mount"
 
-      # Unmount the sparse bundle
-      [[ ! -d  "$base_mount" ]] || hdiutil detach "$base_mount"
-    }
+    # Unmount the High Sierra specific
+    [[ ! -d "$highsierra_mount" ]] || hdiutil detach "$highsierra_mount"
 
-    function cleanup() {
-      detach_mounts
+    # Unmount temporary build path
+    [[ ! -d "$build_mount" ]] || hdiutil detach "$build_mount"
+  }
 
-      # Remove temp directory
-      rm -rf "$temp"
-    }
+  function cleanup() {
+    detach_mounts
 
-    function abort() {
-      printf "\nCommand returned with error, aborting ...\n\n"
-      exit 2
-    }
+    # Remove temp directory
+    rm -rf "$temp"
+  }
 
-    trap cleanup EXIT
-    trap abort ERR
+  function abort() {
+    printf "\nCommand returned with error, aborting ...\n\n"
+    exit 2
+  }
 
+  function prep_build() {
     # Attempt cleanup of any previous attempts
     cleanup
 
     # Prepare to do work
     mkdir -p "$temp"
     mkdir -p "$dist"
+  }
+
+  function build_v2() {
+    trap cleanup EXIT
+    trap abort ERR
+
+    prep_build
+
+    # Create a blank ISO of 7316MB with a Single Partition
+    hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
+
+    # Mount the blank ISO
+    hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
+
+    printf "<sudo> "
+    sudo /Applications/Install\ macOS\ High\ Sierra.app/Contents/Resources/createinstallmedia --volume "$build_mount"
+
+    # Detach mounts
+    detach_mounts
+
+    # Convert the sparse bundle to ISO/CD master
+    hdiutil convert "$temp/$1.cdr.dmg" -format UDTO -o "$temp/$1.iso"
+
+    # Rename the ISO and move it to the distribution "dist" dir
+    mv "$temp/$1.iso.cdr" "$iso"
+
+    cleanup
+
+    printf "\n========== FINISHED ==========\n\n"
+    printf "ISO is located at '%s'\n\n" "$iso"
+  }
+
+  function build() {
+    trap cleanup EXIT
+    trap abort ERR
+
+    prep_build
 
     # Mount the installer image
     hdiutil attach "$app/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "$app_mount"
@@ -99,10 +146,11 @@ EOF
     Mavericks
     "El Capitan"
     Sierra
+    "High Sierra"
   )
   for version in "${versions[@]}"; do
     if [[ "$1" = "$version" ]]; then
-      if [[ "$1" = "Sierra" ]]; then
+      if [[ "$1" == *"Sierra"* ]]; then
       	app="/Applications/Install macOS $1.app"
       else
       	app="/Applications/Install OS X $1.app"
@@ -113,14 +161,18 @@ EOF
 
   Missing: $app
 
-  * You can install it with the App Store
+  * You can download it from the App Store
 
 EOF
         exit 1
       fi
 
       # Do Work
-      build "$1"
+      if [[ "$1" == "High Sierra" ]]; then
+        build_v2 "$1"
+      else
+        build "$1"
+      fi
       exit $?
     fi
   done
