@@ -1,111 +1,79 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function osxiso() {
+  PS3="
+Select OS or Quit: "
+  temp="$PWD/temp"
+  dist="$PWD/dist"
+  base_mount="/Volumes/OS X Base System"
+  build_mount="/Volumes/install_build"
+  app_mount="/Volumes/install_app"
+  apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
+  apps_v2="|macOS High Sierra|"
+  apps=(
+    "macOS High Sierra"
+    "macOS Sierra"
+    "OS X El Capitan"
+    "OS X Yosemite"
+    "OS X Mavericks"
+  )
+  apps_available=()
 
-  local app # path for "Install OS X <version>.app"
-
-  function usage() {
-    cat <<EOF
-
-    Create a bootable ISO of OS X / macOS, from the installation app file.
-
-    Usage:
-
-      $ ${0##*/} <"High Sierra"|Sierra|"El Capitan"|Yosemite|Mavericks>
-
-    Prerequisites:
-
-      The installation app file(s) must be unaltered and located at:
-      "/Applications/Install macOS High Sierra.app"
-      "/Applications/Install macOS Sierra.app"
-      "/Applications/Install OS X El Capitan.app"
-      "/Applications/Install OS X Yosemite.app"
-      "/Applications/Install OS X Mavericks.app"
-EOF
-    exit 1
+  function log_warning() {
+    echo "$(tput setab 3)$(tput setaf 0)>> $* $(tput sgr0)"
   }
 
-  local temp="$PWD/temp"
-  local dist="$PWD/dist"
-  local iso="$dist/$1.iso"
-  local app_mount="/Volumes/install_app"
-  local build_mount="/Volumes/install_build"
-  local base_mount="/Volumes/OS X Base System"
-  local highsierra_mount="/Volumes/Install macOS High Sierra"
+  function log_error() {
+    >&2 echo "$(tput setab 1)$(tput setaf 7)>> $* $(tput sgr0)"
+  }
+
+  function log_success() {
+    echo "$(tput setab 2)$(tput setaf 7)$*$(tput sgr0)"
+  }
 
   function detach_mounts() {
+    # Unmount OS
+    [[ ! -d "/Volumes/Install $1" ]] || hdiutil detach "/Volumes/Install $1"
     # Unmount the installer image
     [[ ! -d  "$app_mount" ]] || hdiutil detach "$app_mount"
-
     # Unmount the sparse bundle
     [[ ! -d  "$base_mount" ]] || hdiutil detach "$base_mount"
-
-    # Unmount the High Sierra specific
-    [[ ! -d "$highsierra_mount" ]] || hdiutil detach "$highsierra_mount"
-
     # Unmount temporary build path
     [[ ! -d "$build_mount" ]] || hdiutil detach "$build_mount"
   }
 
   function cleanup() {
-    detach_mounts
-
+    detach_mounts "$1"
     # Remove temp directory
     rm -rf "$temp"
   }
 
   function abort() {
-    printf "\nCommand returned with error, aborting ...\n\n"
+    echo
+    log_error "Command returned with error, aborting ..."
+    echo
     exit 2
   }
 
   function prep_build() {
-    # Attempt cleanup of any previous attempts
-    cleanup
+    # Attempt cleanup of any failed previous attempts
+    cleanup "$1"
 
     # Prepare to do work
     mkdir -p "$temp"
     mkdir -p "$dist"
   }
 
-  function build_v2() {
+  function build_v1() {
     trap cleanup EXIT
     trap abort ERR
 
-    prep_build
-
-    # Create a blank ISO of 7316MB with a Single Partition
-    hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
-
-    # Mount the blank ISO
-    hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
-
-    printf "<sudo> "
-    sudo /Applications/Install\ macOS\ High\ Sierra.app/Contents/Resources/createinstallmedia --volume "$build_mount"
-
-    # Detach mounts
-    detach_mounts
-
-    # Convert the sparse bundle to ISO/CD master
-    hdiutil convert "$temp/$1.cdr.dmg" -format UDTO -o "$temp/$1.iso"
-
-    # Rename the ISO and move it to the distribution "dist" dir
-    mv "$temp/$1.iso.cdr" "$iso"
-
-    cleanup
-
-    printf "\n========== FINISHED ==========\n\n"
-    printf "ISO is located at '%s'\n\n" "$iso"
-  }
-
-  function build() {
-    trap cleanup EXIT
-    trap abort ERR
+    local app_file="/Applications/Install $1.app"
 
     prep_build
 
     # Mount the installer image
-    hdiutil attach "$app/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "$app_mount"
+    hdiutil attach "$app_file/Contents/SharedSupport/InstallESD.dmg" -noverify -nobrowse -mountpoint "$app_mount"
 
     # Create a blank ISO of 7316MB with a Single Partition
     hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
@@ -124,66 +92,103 @@ EOF
     cp -rp "$app_mount/BaseSystem.chunklist" "$base_mount/BaseSystem.chunklist"
     cp -rp "$app_mount/BaseSystem.dmg" "$base_mount/BaseSystem.dmg"
 
-    # Detach mounts
-    detach_mounts
+    detach_mounts "$1"
 
     # Convert the sparse bundle to ISO/CD master
     hdiutil convert "$temp/$1.cdr.dmg" -format UDTO -o "$temp/$1.iso"
 
-    # Rename the ISO and move it to the distribution "dist" dir
-    mv "$temp/$1.iso.cdr" "$iso"
+    # Rename the ISO and move it to the distribution dir
+    mv "$temp/$1.iso.cdr" "$dist/$1.iso"
 
     cleanup
 
-    printf "\n========== FINISHED ==========\n\n"
-    printf "ISO is located at '%s'\n\n" "$iso"
+    echo
+    log_success "========== FINISHED =========="
+    echo
+    printf "ISO is located at: '%s'\n\n" "$dist/$1.iso"
   }
 
-  # Verify OS X Version
-  [[ $# -ne 0 ]] || usage
-  local versions=(
-    Yosemite
-    Mavericks
-    "El Capitan"
-    Sierra
-    "High Sierra"
-  )
-  for version in "${versions[@]}"; do
-    if [[ "$1" = "$version" ]]; then
-      if [[ "$1" == *"Sierra"* ]]; then
-      	app="/Applications/Install macOS $1.app"
+  function build_v2() {
+    trap cleanup EXIT
+    trap abort ERR
+
+    local app_file="/Applications/Install $1.app"
+
+    prep_build "$1"
+
+    # Create a blank ISO of 7316MB with a Single Partition
+    hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
+
+    # Mount the blank ISO
+    hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
+
+    # Let createinstallmedia populate the blank ISO
+    printf "$(tput setab 3)$(tput setaf 0)%s$(tput sgr0) " "<sudo>"
+    sudo "$app_file"/Contents/Resources/createinstallmedia --volume "$build_mount" --nointeraction
+
+    detach_mounts "$1"
+
+    # Convert the sparse bundle to ISO/CD master
+    hdiutil convert "$temp/$1.cdr.dmg" -format UDTO -o "$temp/$1.iso"
+
+    # Rename the ISO and move it to the distribution dir
+    mv "$temp/$1.iso.cdr" "$dist/$1.iso"
+
+    cleanup
+
+    echo
+    log_success "========== FINISHED =========="
+    echo
+    printf "ISO is located at: '%s'\n\n" "$dist/$1.iso"
+  }
+
+  function choose() {
+    echo
+
+    select app in "${apps_available[@]}"; do
+      case "$app" in
+        "Quit")
+          break
+          ;;
+        *)
+          if [[ "$apps_v2" == *"|$app|"* ]]; then
+            log_success "** Building ISO for $app **"
+            build_v2 "$app"
+          elif [[ "$apps_v1" == *"|$app|"* ]]; then
+            log_success "** Building ISO for $app **"
+            build_v1 "$app"
+          else
+            log_error "You must select a valid option *number* from the list."
+            choose
+          fi
+          break
+          ;;
+      esac
+    done
+  }
+
+  function main() {
+    for app in "${apps[@]}"; do
+      if [[ -d "/Applications/Install $app.app" ]]; then
+        apps_available+=("$app")
       else
-      	app="/Applications/Install OS X $1.app"
+        log_warning "Missing /Applications/Install $app.app"
       fi
+    done
 
-      if [[ ! -e "$app" ]]; then
-        cat <<EOF
+    [[ ${#apps_available[@]} -eq 0 ]] && log_error "You do not have any installer apps available. You can download them from the App Store and try again!" && exit 1
 
-  Missing: $app
+    apps_available+=("Quit")
 
-  * You can download it from the App Store
+    choose
+  }
 
-EOF
-        exit 1
-      fi
-
-      # Do Work
-      if [[ "$1" == "High Sierra" ]]; then
-        build_v2 "$1"
-      else
-        build "$1"
-      fi
-      exit $?
-    fi
-  done
-
-  # Invalid version provided
-  usage
+  main
 }
 
 ## Export or run
-if [[ ${BASH_SOURCE[0]} != $0 ]]; then
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
   export -f osxiso
 else
-  osxiso "$@"
+  osxiso
 fi

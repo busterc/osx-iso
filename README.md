@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-The appropriate installation file(s) must be located in `/Applications` i.e.
+The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
 /Applications/Install macOS High Sierra.app
@@ -19,13 +19,18 @@ Mac users can download theses files from the App Store.
 ## Install with [bpkg](https://github.com/bpkg/bpkg)
 
 ```sh
-$ bpkg install busterc/osx-iso
+$ bpkg install busterc/osx-iso -g
 ```
 
 ## Usage
 
 ```sh
-$ osxiso <"High Sierra"|Sierra|"El Capitan"|Yosemite|Mavericks>
+$ osxiso
+
+1) macOS High Sierra  3) OS X El Capitan    5) OS X Mavericks
+2) macOS Sierra       4) OS X Yosemite      6) Quit
+
+Select OS or Quit:
 ```
 
 ## License
