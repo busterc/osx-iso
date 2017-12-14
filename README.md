@@ -16,6 +16,13 @@ The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 Mac users can download theses files from the App Store.
 
+## Install with [Homebrew](https://brew.sh)
+
+```sh
+$ brew tap busterc/tap
+$ brew install osx-iso
+```
+
 ## Install with [bpkg](https://github.com/bpkg/bpkg)
 
 ```sh
