@@ -7,6 +7,7 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Mojave.app
 /Applications/Install macOS High Sierra.app
 /Applications/Install macOS Sierra.app
 /Applications/Install OS X El Capitan.app
@@ -34,8 +35,8 @@ $ bpkg install busterc/osx-iso -g
 ```sh
 $ osxiso
 
-1) macOS High Sierra  3) OS X El Capitan    5) OS X Mavericks
-2) macOS Sierra       4) OS X Yosemite      6) Quit
+1) macOS Mojave         3) macOS Sierra       5) OS X Yosemite     7) Quit
+2) macOS High Sierra    4) OS X El Capitan    6) OS X Mavericks
 
 Select OS or Quit:
 ```
