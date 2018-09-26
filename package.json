@@ -1,6 +1,6 @@
 {
   "name": "osxiso",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Create a bootable ISO of OS X / macOS, from the installation app file.",
   "global": "1",
   "install": "install -c osxiso ${PREFIX:-/usr/local}/bin",
