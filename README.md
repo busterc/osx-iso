@@ -24,12 +24,6 @@ $ brew tap busterc/tap
 $ brew install osx-iso
 ```
 
-## Install with [bpkg](https://github.com/bpkg/bpkg)
-
-```sh
-$ bpkg install busterc/osx-iso -g
-```
-
 ## Usage
 
 ```sh
@@ -46,7 +40,7 @@ Select OS or Quit:
 
 ISC License (ISC)
 
-Copyright &copy; 2015-2017, Buster Collings
+Copyright &copy; 2015-2018, Buster Collings
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
