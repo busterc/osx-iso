@@ -9,8 +9,9 @@ Select OS or Quit: "
   build_mount="/Volumes/install_build"
   app_mount="/Volumes/install_app"
   apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
-  apps_v2="|macOS High Sierra|macOS Mojave|"
+  apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|"
   apps=(
+    "macOS Catalina"
     "macOS Mojave"
     "macOS High Sierra"
     "macOS Sierra"
@@ -117,8 +118,8 @@ Select OS or Quit: "
 
     prep_build "$1"
 
-    # Create a blank ISO of 7316MB with a Single Partition
-    hdiutil create -o "$temp/$1.cdr" -size 7316m -layout SPUD -fs HFS+J
+    # Create a blank ISO of 8121MB (7,93 GiB) with a Single Partition
+    hdiutil create -o "$temp/$1.cdr" -size 8121m -layout SPUD -fs HFS+J
 
     # Mount the blank ISO
     hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
