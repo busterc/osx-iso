@@ -9,8 +9,10 @@ Select OS or Quit: "
   build_mount="/Volumes/install_build"
   app_mount="/Volumes/install_app"
   apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
-  apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|"
+  apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|macOS Big Sur|"
+  apps_large="|macOS Big Sur|"
   apps=(
+    "macOS Big Sur"
     "macOS Catalina"
     "macOS Mojave"
     "macOS High Sierra"
@@ -35,13 +37,13 @@ Select OS or Quit: "
 
   function detach_mounts() {
     # Unmount OS
-    [[ ! -d "/Volumes/Install $1" ]] || hdiutil detach "/Volumes/Install $1"
+    [[ ! -d "/Volumes/Install $1" ]] || hdiutil detach -force "/Volumes/Install $1"
     # Unmount the installer image
-    [[ ! -d  "$app_mount" ]] || hdiutil detach "$app_mount"
+    [[ ! -d  "$app_mount" ]] || hdiutil detach -force "$app_mount"
     # Unmount the sparse bundle
-    [[ ! -d  "$base_mount" ]] || hdiutil detach "$base_mount"
+    [[ ! -d  "$base_mount" ]] || hdiutil detach -force "$base_mount"
     # Unmount temporary build path
-    [[ ! -d "$build_mount" ]] || hdiutil detach "$build_mount"
+    [[ ! -d "$build_mount" ]] || hdiutil detach -force "$build_mount"
   }
 
   function cleanup() {
@@ -105,9 +107,9 @@ Select OS or Quit: "
     cleanup
 
     echo
-    log_success "========== FINISHED =========="
+    echo "ISO is located at:"
     echo
-    printf "ISO is located at: '%s'\n\n" "$dist/$1.iso"
+    echo "$dist/$1.iso"
   }
 
   function build_v2() {
@@ -118,8 +120,12 @@ Select OS or Quit: "
 
     prep_build "$1"
 
-    # Create a blank ISO of 8121MB (7,93 GiB) with a Single Partition
-    hdiutil create -o "$temp/$1.cdr" -size 8121m -layout SPUD -fs HFS+J
+    iso_size="8125m"
+    if [[ "$apps_large" == *"|$1|"* ]]; then
+      iso_size="13250m"
+    fi
+    # Create a blank ISO with a Single Partition
+    hdiutil create -o "$temp/$1.cdr" -size "$iso_size" -layout SPUD -fs HFS+J
 
     # Mount the blank ISO
     hdiutil attach "$temp/$1.cdr.dmg" -noverify -nobrowse -mountpoint "$build_mount"
@@ -141,7 +147,9 @@ Select OS or Quit: "
     echo
     log_success "========== FINISHED =========="
     echo
-    printf "ISO is located at: '%s'\n\n" "$dist/$1.iso"
+    echo "ISO is located at:"
+    echo
+    echo "$dist/$1.iso"
   }
 
   function choose() {

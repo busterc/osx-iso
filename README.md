@@ -30,9 +30,9 @@ $ brew install osx-iso
 ```sh
 $ osxiso
 
-1) macOS Catalina     4) macOS Sierra       7) OS X Mavericks
-2) macOS Mojave       5) OS X El Capitan    8) Quit
-3) macOS High Sierra  6) OS X Yosemite
+1) macOS Big Sur      4) macOS High Sierra  7) OS X Yosemite
+2) macOS Catalina     5) macOS Sierra       8) OS X Mavericks
+3) macOS Mojave       6) OS X El Capitan    9) Quit
 
 Select OS or Quit:
 ```
@@ -41,7 +41,7 @@ Select OS or Quit:
 
 ISC License (ISC)
 
-Copyright &copy; 2015-2018, Buster Collings
+Copyright &copy; 2015-2021, Buster Collings
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
