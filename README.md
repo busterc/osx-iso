@@ -7,6 +7,7 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Big Sur.app
 /Applications/Install macOS Catalina.app
 /Applications/Install macOS Mojave.app
 /Applications/Install macOS High Sierra.app
