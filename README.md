@@ -7,6 +7,7 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Monterey.app
 /Applications/Install macOS Big Sur.app
 /Applications/Install macOS Catalina.app
 /Applications/Install macOS Mojave.app
@@ -31,9 +32,9 @@ $ brew install osx-iso
 ```sh
 $ osxiso
 
-1) macOS Big Sur      4) macOS High Sierra  7) OS X Yosemite
-2) macOS Catalina     5) macOS Sierra       8) OS X Mavericks
-3) macOS Mojave       6) OS X El Capitan    9) Quit
+1) macOS Monterey  4) macOS Mojave       7) OS X El Capitan  10) Quit
+2) macOS Big Sur   5) macOS High Sierra  8) OS X Yosemite
+3) macOS Catalina  6) macOS Sierra       9) OS X Mavericks
 
 Select OS or Quit:
 ```
