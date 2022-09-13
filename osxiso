@@ -123,7 +123,7 @@ Select OS or Quit: "
 
     iso_size="8125m"
     if [[ "$apps_large" == *"|$1|"* ]]; then
-      iso_size="13750m"
+      iso_size="14000m"
     fi
     # Create a blank ISO with a Single Partition
     hdiutil create -o "$temp/$1.cdr" -size "$iso_size" -layout SPUD -fs HFS+J
