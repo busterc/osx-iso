@@ -7,6 +7,8 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Sonoma.app
+/Applications/Install macOS Ventura.app
 /Applications/Install macOS Monterey.app
 /Applications/Install macOS Big Sur.app
 /Applications/Install macOS Catalina.app
