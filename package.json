@@ -1,17 +1,17 @@
 {
   "name": "osxiso",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "Create a bootable ISO of OS X / macOS, from the installation app file.",
   "global": "1",
   "install": "install -c osxiso ${PREFIX:-/usr/local}/bin",
   "repository": {
     "type": "git",
-    "url": "https://github.com/busterc/osx-iso"
+    "url": "https://github.com/startergo/osx-iso"
   },
   "author": "Buster Collings",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/busterc/osx-iso/issues"
   },
-  "homepage": "https://github.com/busterc/osx-iso"
+  "homepage": "https://github.com/startergo/osx-iso"
 }
