@@ -7,6 +7,7 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Sequoia.app
 /Applications/Install macOS Sonoma.app
 /Applications/Install macOS Ventura.app
 /Applications/Install macOS Monterey.app
@@ -25,7 +26,7 @@ Mac users can download theses files from the App Store.
 ## Install with [Homebrew](https://brew.sh)
 
 ```sh
-$ brew tap busterc/tap
+$ brew tap startergo/tap
 $ brew install osx-iso
 ```
 
@@ -34,9 +35,9 @@ $ brew install osx-iso
 ```sh
 $ osxiso
 
-1) macOS Monterey  4) macOS Mojave       7) OS X El Capitan  10) Quit
-2) macOS Big Sur   5) macOS High Sierra  8) OS X Yosemite
-3) macOS Catalina  6) macOS Sierra       9) OS X Mavericks
+1) macOS Sequoia  4) macOS Monterey  7) macOS Mojave       9) OS X El Capitan  12) Quit
+2) macOS Sonoma   5) macOS Big Sur   8) macOS High Sierra 10) OS X Yosemite
+3) macOS Ventura  5) macOS Catalina  9) macOS Sierra      11) OS X Mavericks  
 
 Select OS or Quit:
 ```
