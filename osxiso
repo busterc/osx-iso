@@ -10,7 +10,8 @@ Select OS or Quit: "
   app_mount="/Volumes/install_app"
   apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
   apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|macOS Sequoia|"
-  apps_large="|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma||macOS Sequoia|"
+  apps_large="|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|"
+  apps_extra_large="||macOS Sequoia|"
   apps=(
     "macOS Sequoia"
     "macOS Sonoma"
@@ -127,6 +128,8 @@ Select OS or Quit: "
     iso_size="8125m"
     if [[ "$apps_large" == *"|$1|"* ]]; then
       iso_size="15000m"
+    elif [[ "$apps_extra_large" == *"|$1|"* ]]; then
+      iso_size="28000m"
     fi
     # Create a blank ISO with a Single Partition
     hdiutil create -o "$temp/$1.cdr" -size "$iso_size" -layout SPUD -fs HFS+J
