@@ -11,7 +11,7 @@ Select OS or Quit: "
   apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
   apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|macOS Sequoia|"
   apps_large="|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|"
-  apps_extra_large="||macOS Sequoia|"
+  apps_extra_large="|macOS Sequoia|"
   apps=(
     "macOS Sequoia"
     "macOS Sonoma"
