@@ -7,6 +7,10 @@
 The appropriate installation app file(s) must be located in `/Applications` i.e.
 
 ```
+/Applications/Install macOS Tahoe.app
+/Applications/Install macOS Sequoia.app
+/Applications/Install macOS Sonoma.app
+/Applications/Install macOS Ventura.app
 /Applications/Install macOS Monterey.app
 /Applications/Install macOS Big Sur.app
 /Applications/Install macOS Catalina.app
@@ -18,7 +22,7 @@ The appropriate installation app file(s) must be located in `/Applications` i.e.
 /Applications/Install OS X Mavericks.app
 ```
 
-Mac users can download theses files from the App Store.
+- See: [How to download macOS](https://support.apple.com/en-us/102662)
 
 ## Install with [Homebrew](https://brew.sh)
 
@@ -32,9 +36,20 @@ $ brew install osx-iso
 ```sh
 $ osxiso
 
-1) macOS Monterey  4) macOS Mojave       7) OS X El Capitan  10) Quit
-2) macOS Big Sur   5) macOS High Sierra  8) OS X Yosemite
-3) macOS Catalina  6) macOS Sierra       9) OS X Mavericks
+ 1) macOS Tahoe
+ 2) macOS Sequoia
+ 3) macOS Sonoma
+ 4) macOS Ventura
+ 5) macOS Monterey
+ 6) macOS Big Sur
+ 7) macOS Catalina
+ 8) macOS Mojave
+ 9) macOS High Sierra
+10) macOS Sierra
+11) OS X El Capitan
+12) OS X Yosemite
+13) OS X Mavericks
+14) Quit
 
 Select OS or Quit:
 ```
@@ -43,7 +58,7 @@ Select OS or Quit:
 
 ISC License (ISC)
 
-Copyright &copy; 2015-2021, Buster Collings
+Copyright &copy; 2015-2026, Buster Collings
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 

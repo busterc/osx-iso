@@ -9,9 +9,13 @@ Select OS or Quit: "
   build_mount="/Volumes/install_build"
   app_mount="/Volumes/install_app"
   apps_v1="|macOS Sierra|OS X El Capitan|OS X Yosemite|OS X Mavericks|"
-  apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|macOS Big Sur|macOS Monterey|"
-  apps_large="|macOS Big Sur|macOS Monterey|"
+  apps_v2="|macOS High Sierra|macOS Mojave|macOS Catalina|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|macOS Sequoia|macOS Tahoe|"
+  apps_large="|macOS Big Sur|macOS Monterey|macOS Ventura|macOS Sonoma|macOS Sequoia|macOS Tahoe|"
   apps=(
+    "macOS Tahoe"
+    "macOS Sequoia"
+    "macOS Sonoma"
+    "macOS Ventura"
     "macOS Monterey"
     "macOS Big Sur"
     "macOS Catalina"
@@ -23,6 +27,8 @@ Select OS or Quit: "
     "OS X Mavericks"
   )
   apps_available=()
+  how_to_download_macos="https://support.apple.com/en-us/102662"
+  how_to_download_message="How to download macOS: $how_to_download_macos"
 
   function log_warning() {
     echo "$(tput setab 3)$(tput setaf 0)>> $* $(tput sgr0)"
@@ -123,7 +129,7 @@ Select OS or Quit: "
 
     iso_size="8125m"
     if [[ "$apps_large" == *"|$1|"* ]]; then
-      iso_size="13750m"
+      iso_size="20000m"
     fi
     # Create a blank ISO with a Single Partition
     hdiutil create -o "$temp/$1.cdr" -size "$iso_size" -layout SPUD -fs HFS+J
@@ -154,8 +160,13 @@ Select OS or Quit: "
   }
 
   function choose() {
-    echo
+    if [[ ${#apps_available[@]} -gt 0 ]]; then
+      echo
+      echo "Available OSes:"
+      echo
+    fi
 
+    COLUMNS=1
     select app in "${apps_available[@]}"; do
       case "$app" in
         "Quit")
@@ -179,15 +190,31 @@ Select OS or Quit: "
   }
 
   function main() {
+    need_to_download_macos=false
+
     for app in "${apps[@]}"; do
       if [[ -d "/Applications/Install $app.app" ]]; then
         apps_available+=("$app")
       else
         log_warning "Missing /Applications/Install $app.app"
+        need_to_download_macos=true
       fi
     done
 
-    [[ ${#apps_available[@]} -eq 0 ]] && log_error "You do not have any installer apps available. You can download them from the App Store and try again!" && exit 1
+    if [[ ${#apps_available[@]} -eq 0 ]]; then
+      echo
+      log_error "You do not have any OS installer apps available :("
+      echo
+      log_success ">> $how_to_download_message "
+      echo
+      exit 1
+    fi
+
+    if [[ "$need_to_download_macos" == true ]]; then
+      echo
+      log_success ">> $how_to_download_message "
+      echo
+    fi
 
     apps_available+=("Quit")
 
